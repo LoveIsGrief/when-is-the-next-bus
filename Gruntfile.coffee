@@ -17,7 +17,15 @@ module.exports = (grunt)->
 				src: [ "src/**.coffee" ]
 				dest: "build/main.js"
 
+		codo:
+			src: [
+				"src"
+			]
+
+
 
 	grunt.registerTask "default", ["coffee"]
+	grunt.registerTask "doc", ["codo"]
 
 	grunt.loadNpmTasks "grunt-contrib-coffee"
+	grunt.loadNpmTasks "grunt-codo"

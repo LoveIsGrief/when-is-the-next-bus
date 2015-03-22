@@ -27,6 +27,7 @@
   "homepage": "https://github.com/LoveIsGrief/when-is-the-next-bus",
   "devDependencies": {
     "grunt": "^0.4.5",
+    "grunt-codo": "^0.2.0",
     "grunt-contrib-coffee": "^0.13.0"
   }
 }
