@@ -1,0 +1,28 @@
+{
+  "name": "when-is-the-next-bus",
+  "version": "0.0.1",
+  "description": "Wanna know when your next bus is arriving? Take a look at the map and click your stop :)",
+  "main": "index.js",
+  "private":, true,
+  "directories": {
+    "doc": "doc",
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LoveIsGrief/when-is-the-next-bus.git"
+  },
+  "keywords": [
+    "information",
+    "website"
+  ],
+  "author": "LoveIsGrief",
+  "license": "GPL v.3",
+  "bugs": {
+    "url": "https://github.com/LoveIsGrief/when-is-the-next-bus/issues"
+  },
+  "homepage": "https://github.com/LoveIsGrief/when-is-the-next-bus"
+}
