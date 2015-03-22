@@ -15,7 +15,7 @@ class ProviderData
 
 	###
 	@param providerName {String}
-	@param stationData {@see StationData}
+	@param stationData {StationData}
 	###
 	addProvider: (providerName, stationData)->
 		@internalObject[providerName] = stationData
