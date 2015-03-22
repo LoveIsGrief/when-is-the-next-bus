@@ -27,5 +27,6 @@ node_modules
 # Users Environment Variables
 .lock-wscript
 
-#Generated documentation
+#Generated files
 doc/
+build/
