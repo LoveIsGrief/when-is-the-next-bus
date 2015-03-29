@@ -18,7 +18,7 @@ describe "EnvibusRemoteStationsGetter", ->
 				# Replace with stub, no need to actualy call http.get
 				@getter.httpGet = (args...)->
 
-				promise = @getter.get(65,65)
+				promise = @getter.get()
 				expect(Q.isPromise(promise)).toBeTruthy()
 
 			it "should promise a map of stations", (done)->
@@ -30,3 +30,16 @@ describe "EnvibusRemoteStationsGetter", ->
 					expect(keys.length).toBeGreaterThan 0
 
 					done()
+
+		describe "parseReceivedData", ->
+
+			it "should be a method", ->
+				expect(@getter.parseReceivedData).toBeDefined()
+				expect( typeof @getter.parseReceivedData).toEqual "function"
+
+			it "should be callable", ->
+				expect(@getter.parseReceivedData).not.toThrow()
+
+			it "should return an empty object for empty string input", ->
+				object = @getter.parseReceivedData()
+				expect(object).toEqual {}
