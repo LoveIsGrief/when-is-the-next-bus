@@ -1,3 +1,4 @@
+fs = require "fs"
 Q = require "q"
 r = require("require-root")("project")
 EnvibusRemoteStationBuslistGetter = r("tools/envibus/EnvibusRemoteStationBuslistGetter")
@@ -21,12 +22,13 @@ describe "EnvibusRemoteStationBuslistGetter", ->
 				promise = @getter.get("a code")
 				expect(Q.isPromise(promise)).toBeTruthy()
 
-			xit "should promise a list of busline objects", (done)->
+			# TODO split this into a live test as the results keep changing
+			it "should promise a list of busline objects", (done)->
 				@getter.get("999").then (buses)->
 					expect(buses).toBeDefined()
 					expect(buses).not.toBeNull()
 
-					expect(stations.length).toBeGreaterThan 0
+					expect(buses.length).toBeGreaterThan 0
 
 					done()
 
@@ -39,5 +41,11 @@ describe "EnvibusRemoteStationBuslistGetter", ->
 				array = @getter.parseReceivedData ""
 				expect(array instanceof Array).toBeTruthy()
 
-			xit "should return a filled array with valid html", ->
+			it "should return a filled array with valid html", ->
+				array = @getter.parseReceivedData fs.readFileSync "specs/assets/envibus/station999.html"
+				expect(array.length).toBeGreaterThan 0
+
+				firstBus = array.pop()
+				expect(firstBus.name).toBeDefined()
+				expect(firstBus.code).toBeDefined()
 
