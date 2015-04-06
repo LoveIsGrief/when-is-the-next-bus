@@ -1,10 +1,12 @@
 $ = require "cheerio"
 fs = require "fs"
 _ = require "lodash"
+logger = require("log4js").getLogger()
 querystring = require "querystring"
 
 r = require("require-root")("project")
 RemoteGetter = r("tools/RemoteGetter")
+EnvibusRemoteStationBuslistGetter = r("tools/envibus/EnvibusRemoteStationBuslistGetter")
 
 ###
 Remote getter to @see get the buses
@@ -75,7 +77,16 @@ class EnvibusRemoteNextBusesGetter extends RemoteGetter
 	###
 	get: (stationCode,buslineCodes)->
 
-		# build a url using the letter and handle the url
-		@makeRequest @buildUrl(stationCode,buslineCodes)
+		if buslineCodes
+			# build a url using the letter and handle the url
+			@makeRequest @buildUrl(stationCode,buslineCodes)
+		else
+			logger.debug "No busline codes"
+			getter = new EnvibusRemoteStationBuslistGetter()
+			getter.get(stationCode).then (buses)=>
+				busCodes = _.pluck buses, "code"
+				logger.debug "#{stationCode} got busline codes: ", busCodes
+				@makeRequest @buildUrl(stationCode, busCodes)
+
 
 module.exports = EnvibusRemoteNextBusesGetter
