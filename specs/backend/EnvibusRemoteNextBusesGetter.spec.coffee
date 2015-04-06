@@ -1,8 +1,8 @@
 fs = require "fs"
+logger = require("log4js").getLogger()
 Q = require "q"
 r = require("require-root")("project")
 EnvibusRemoteNextBusesGetter = r("tools/envibus/EnvibusRemoteNextBusesGetter")
-
 
 describe "EnvibusRemoteNextBusesGetter", ->
 
@@ -15,29 +15,55 @@ describe "EnvibusRemoteNextBusesGetter", ->
 			it "should have a method #get", ->
 				expect(@getter.get).toBeDefined()
 
-			it "should return a promise", ->
-				# Replace with stub, no need to actualy call http.get
-				@getter.httpGet = (args...)->
+			describe "with station and buslinecodes" , ->
 
-				promise = @getter.get("a code")
-				expect(Q.isPromise(promise)).toBeTruthy()
+				it "should return a promise", ->
+					# Replace with stub, no need to actualy call http.get
+					@getter.httpGet = (args...)->
 
-			# TODO split this into a live test as the results keep changing
-			xit "should promise a list of busline objects", (done)->
-				station = "999"
-				busCodes = [
-					"1"
-					"2"
-					"3"
-					"4"
-				]
-				@getter.get("999", busCodes).then (nextBuses)->
-					expect(nextBuses).toBeDefined()
-					expect(nextBuses).not.toBeNull()
+					promise = @getter.get("a code",[])
+					expect(Q.isPromise(promise)).toBeTruthy()
 
-					expect(nextBuses.length).toBeGreaterThan 0
+				# TODO split this into a live test as the results keep changing
+				it "should promise a list of busline objects", (done)->
+					station = "999"
+					busCodes = [
+						"999$1$453"
+						"999$11$2811"
+						"999$43$31"
+						"999$6$31"
+					]
+					@getter.get("999", busCodes).then (nextBuses)->
+						expect(nextBuses).toBeDefined()
+						expect(nextBuses).not.toBeNull()
 
-					done()
+						expect(nextBuses.length).toBeGreaterThan 0
+
+						done()
+
+			describe "with only the station" , ->
+
+				beforeEach ->
+					logger.setLevel "DEBUG"
+				afterEach ->
+					logger.setLevel "INFO"
+
+				it "should return a promise", ->
+						# Replace with stub, no need to actualy call http.get
+						@getter.httpGet = (args...)->
+
+						promise = @getter.get("a code")
+						expect(Q.isPromise(promise)).toBeTruthy()
+
+				it "should promise a list of busline objects", (done)->
+					station = "999"
+					@getter.get("999").then (nextBuses)->
+						expect(nextBuses).toBeDefined()
+						expect(nextBuses).not.toBeNull()
+
+						expect(nextBuses.length).toBeGreaterThan 0
+
+						done()
 
 		describe "parseReceivedData", ->
 
