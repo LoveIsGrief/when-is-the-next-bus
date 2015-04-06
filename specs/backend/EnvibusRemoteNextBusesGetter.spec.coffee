@@ -4,6 +4,8 @@ Q = require "q"
 r = require("require-root")("project")
 EnvibusRemoteNextBusesGetter = r("tools/envibus/EnvibusRemoteNextBusesGetter")
 
+logger.setLevel "INFO"
+
 describe "EnvibusRemoteNextBusesGetter", ->
 
 		beforeEach ->
@@ -42,11 +44,6 @@ describe "EnvibusRemoteNextBusesGetter", ->
 						done()
 
 			describe "with only the station" , ->
-
-				beforeEach ->
-					logger.setLevel "DEBUG"
-				afterEach ->
-					logger.setLevel "INFO"
 
 				it "should return a promise", ->
 						# Replace with stub, no need to actualy call http.get
