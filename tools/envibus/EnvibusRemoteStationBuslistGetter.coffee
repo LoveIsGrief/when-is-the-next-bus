@@ -1,5 +1,6 @@
 $ = require "cheerio"
 _ = require "lodash"
+logger = require("log4js").getLogger()
 Q = require "q"
 
 r = require("require-root")("project")
@@ -23,7 +24,7 @@ class EnvibusRemoteStationBuslistGetter extends RemoteGetter
 		document = $.load html
 		trs = document('div.formulaire>table>tr')
 
-		trs.filter ->
+		buses = trs.filter ->
 			$("input", @).attr("value") != ""
 		.map ->
 			code = $("input", @).attr("value")
@@ -32,7 +33,13 @@ class EnvibusRemoteStationBuslistGetter extends RemoteGetter
 				name: name
 				code: code
 			}
+			logger.debug "parsed bus: ", bus
+			bus
 		.get()
+
+		logger.debug "parsed buses: ", buses
+
+		buses
 
 	###
 	Promise to get the list of buses for a station
@@ -41,7 +48,7 @@ class EnvibusRemoteStationBuslistGetter extends RemoteGetter
 	@returns a promise with list of buses for the given station
 	###
 	get: (stationCode)->
-
+		logger.debug "Getting buses for stationcode: #{stationCode}"
 		# build a url using the letter and handle the url
 		@makeRequest @buildUrl stationCode
 
