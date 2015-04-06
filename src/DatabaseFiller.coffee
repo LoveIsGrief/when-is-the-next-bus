@@ -1,11 +1,15 @@
-Q = require "q"
+_ = require "lodash"
+logger = require("log4js").getLogger()
 
 class DatabaseFiller
 	constructor: ->
 
-	updateAllStationsNextBuses: (provider, stations)->
-		deferred = Q.defer()
-
-		deferred.promise
+	updateStationsNextBuses: (provider, stationCode)->
+		provider.getBusesForStation(stationCode)
+		.then (buses)->
+			logger.debug "then buses: ", buses
+			busCodes = _.pluck buses, "code"
+			logger.debug "buscodes: ", busCodes
+			provider.getTimesForNextBuses stationCode, busCodes
 
 module.exports = DatabaseFiller
