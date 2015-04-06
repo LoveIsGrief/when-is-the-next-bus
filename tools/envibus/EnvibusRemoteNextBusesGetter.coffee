@@ -44,23 +44,19 @@ class EnvibusRemoteNextBusesGetter extends RemoteGetter
 
 		trs.has "img"
 		.map (i,el) =>
-			bus = {}
 
-			bus.name = $("img", el).attr("alt")
 			text = $(el).text()
-
-
 			directionRes = @directionRegex.exec text
-			bus.direction = directionRes[1] if directionRes
-
 			nextRes = @nextBusRegex.exec text
-			bus.next = nextRes[1] if nextRes
-
 			followingRes = null
 			for regex in @followingBusRegexs
 				followingRes = regex.exec text
 				continue if not followingRes
 
+			bus = {}
+			bus.name = $("img", el).attr("alt")
+			bus.direction = directionRes[1] if directionRes
+			bus.next = nextRes[1] if nextRes
 			bus.following = followingRes[1] if followingRes
 
 			bus
