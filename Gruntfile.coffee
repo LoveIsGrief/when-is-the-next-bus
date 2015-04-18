@@ -20,6 +20,7 @@ module.exports = (grunt)->
 		codo:
 			src: [
 				"src"
+				"tools"
 			]
 
 		jasmine_nodejs:
