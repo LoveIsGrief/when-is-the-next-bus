@@ -1,9 +1,12 @@
+ChildProcess = require "child_process"
+createPool = require("generic-pool").Pool
 _ = require "lodash"
 logger = require("log4js").getLogger()
+RR = require "require-root"
 
 class DatabaseFiller
 
-	constructor: (@providerData,@getters,@updateInterval=5000)->
+	constructor: (@updateInterval=5000, @eventEmitter=process)->
 		###
 		NodeJS doesn't create timerIDs, but timer-objects
 		We need timerIDs
@@ -17,56 +20,184 @@ class DatabaseFiller
 		Set when we are stopping the filler
 		###
 		@stopping = false
+		@pool = null
+		@providerdata = {}
+		@providerStationPairs = []
+		@workerFilePath = RR.findRoot("project") + "/src/DatabaseFillerWorker.coffee"
 
 	###
-	Queues a next update, that can be monitored and cleared if necessary.
-	When stopping enqueues are denied
-
-	@param fun {Function} function to be queued
-	@param args {} arguments to call fun with
+	Gets the providerdata from a predefined source
 	###
-	queueNextUpdate: (fun, args...)->
+	initProviderData: ->
+
+	###
+	Creates pairs from the providerdata
+	###
+	initProviderStationPairs: ->
+		for provider, stationData of @providerdata
+			for stationCode of stationData
+				@providerStationPairs.push {
+					provider: provider
+					stationCode: stationCode
+				}
+
+	###
+	Creates a thread pool
+	###
+	initPool: ->
+		return if @pool
+		@pool = createPool
+			name: "DatabaseFillerWorkersPool"
+			create: @createChildWorker
+			min: @getMinNumberOfChildren()
+			max: @getMaxNumberOfChildren()
+			idleTimeoutMillis: @updateInterval*2
+			reapIntervalMillis: @updateInterval
+			validate: @isChildWorkerValid
+			log: (string, level)->
+				if level is "verbose"
+					logger.trace string
+				else
+					logger[level] string
+
+
+	createChildWorker: (callback)=>
+		child = ChildProcess.fork @workerFilePath
+		# Let it notify its presence before we say it's ok to use
+		# child.stdout.on "data", (data)->
+		callback child
+	killChildWorker:(child)=>
+		child.kill()
+	isChildWorkerValid: (child)=>
+		child.connected
+
+	###
+	TODO calculation depending on number of pairs
+	###
+	getMaxNumberOfChildren: ->
+		10
+	###
+	TODO calculation depending on number of pairs
+	###
+	getMinNumberOfChildren: ->
+		1
+
+	###
+	Adds async actions to update the stations ASAP
+	###
+	initQueue: ->
+		oldInterval = @updateInterval
+		@updateInterval = 1
+
+		@providerStationPairs.forEach @queueNextUpdate
+
+		@updateInterval = oldInterval
+
+	###
+	Queues a next update, that can be monitored
+	and cleared if necessary.
+	When stopping, enqueues are denied.
+
+	@param pair {ProviderStationPair} Pair to be updated
+	###
+	queueNextUpdate: (pair)->
 		return if @stopping
 
 		timerId = @nextTimerId
 		@nextTimerId = @nextTimerId + 1
 
-		@timeouts[timerId]=setTimeout =>
-			logger.debug timerId
-			delete @timeouts[timerId]
+		dequeueFunc = @dequeueUpdate.bind @, timerId, pair
 
-			logger.debug "apply args: #{args}"
-			fun.apply @, args
-		, @updateInterval
+		@timeouts[timerId]=setTimeout dequeueFunc
+			, @updateInterval
 
+	###
+	Removes the timerId from the queue
+	and processes the pair with a worker from the pool
+	if possible.
 
-	writeToDb: (args...)->
-		logger.debug args
+	@param timerId {Integer}
+	@param pair {ProviderStationPair}
+	###
+	dequeueUpdate: (timerId, pair)->
+		logger.info "Handling pair(#{timerId}): #{pair}"
+		delete @timeouts[timerId]
 
-	updateStationsNextBuses: (provider, stationCode)->
-		@getters.inject(provider).getNextBusesForStation(stationCode)
-		.then (buses)=>
-			@writeToDb provider, stationCode, buses
-		.finally =>
-			@queueNextUpdate @updateStationsNextBuses, provider, stationCode
+		@pool.acquire (error, childWorker)=>
+			if error
+				@queueNextUpdate pair
+			else
+				@makeChildWork childWorker, pair
+
+	###
+	Them little brats gotta work, eh?
+
+	@param childWorker {ChildProcess} basic running childprocess
+	@param pair {ProviderStationPair} data the childworker should treat
+	###
+	makeChildWork: (childWorker, pair)->
+		childWorker.send pair
+
+	################################################
+	###############Handlers#########################
+	################################################
+
+	###
+	Enqueues the pair to be handled again.
+
+	@param message {ResponseObject}
+		{
+			status: "String OK|KO"
+			pair:
+				provider: "String"
+				stationCode: "String"
+		}
+	###
+	handleWorkerReponse: (message)=>
+		pair = message.pair
+		if message.status == "OK"
+			logger.info "Handled #{pair}"
+		else
+			logger.error "Failed handling #{pair}"
+
+		@queueNextUpdate pair
+
 
 	###
 	Initial updates of the db that will enqueue themselves
 	###
 	start: ->
-		for provider, stations of @providerData
-			for station in stations
-				@updateStationsNextBuses(provider, station)
+		@initProviderData()
+		@initProviderStationPairs()
+		@initPool()
+		@initQueue()
+
+
+		# Register a handler for the responses from finished workers
+		@eventEmitter.on "message", @handleWorkerReponse
 
 	###
 	Graceful shutdown. Waits till all requests are done
 	and prevents any new ones from being made.
 	###
 	stop: ->
+		return if @stopping
+
 		logger.debug "Stopping...."
+
+		# Clear queue and prevent new items to be queued
 		@stopping = true
 		for timerId, timer of @timeouts
 			clearTimeout timer
+
+		# Waits until all processes have idled out
+		return if not @pool
+		@pool.drain =>
+			@pool.destroyAllNow()
+
+# Start up a filler if the file is being run directly
+if require.main is module
+	(new DatabaseFiller).start()
 
 
 module.exports = DatabaseFiller
