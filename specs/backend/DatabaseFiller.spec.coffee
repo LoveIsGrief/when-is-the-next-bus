@@ -6,12 +6,13 @@ DatabaseFiller = R("src/DatabaseFiller")
 EnvibusRemoteNextBusesGetter = R("tools/envibus/EnvibusRemoteNextBusesGetter")
 toBeInstanceOf = R("specs/matchers/toBeInstanceOf")
 
-logger.setLevel "INFO"
+logger.setLevel "OFF"
 
 describe "DatabaseFiller" , ->
 
 	beforeEach ->
 		toBeInstanceOf(jasmine)
+		@filler = new DatabaseFiller
 
 	describe "#constructor", ->
 
@@ -114,3 +115,37 @@ describe "DatabaseFiller" , ->
 					done()
 
 				@filler.killChildWorker child
+
+	describe "handling updates", ->
+
+		it "should have #enqueueUpdate", ->
+			enqueueUpdate = @filler.enqueueUpdate
+			expect(enqueueUpdate).toBeDefined()
+			expect(enqueueUpdate).toBeInstanceOf Function
+
+		it "should have #dequeueUpdate", ->
+			dequeueUpdate = @filler.dequeueUpdate
+			expect(dequeueUpdate).toBeDefined()
+			expect(dequeueUpdate).toBeInstanceOf Function
+
+		describe "enqueuing updates", ->
+
+			beforeEach ->
+				@filler = new DatabaseFiller
+				@filler.updateInterval = 1
+				spyOn @filler, "dequeueUpdate"
+
+			it "should enqueue an time-shifted update", (done)->
+
+				timeouts = Object.keys(@filler.timeouts)
+				expect(timeouts.length).toBe 0
+				@filler.enqueueUpdate "not important"
+
+
+				timeouts = Object.keys(@filler.timeouts)
+				expect(timeouts.length).toBe 1
+
+				setTimeout =>
+					expect(@filler.dequeueUpdate).toHaveBeenCalled()
+					done()
+				, 1
