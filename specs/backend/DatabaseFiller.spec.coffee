@@ -149,3 +149,26 @@ describe "DatabaseFiller" , ->
 					expect(@filler.dequeueUpdate).toHaveBeenCalled()
 					done()
 				, 1
+
+		describe "dequeuing updates", ->
+
+			beforeEach ->
+				@filler = new DatabaseFiller
+				@filler.updateInterval = 1
+
+				@pool = acquire: ->
+				spyOn @pool, "acquire"
+				@filler.pool = @pool
+
+			it "should remove a timeout from timeouts object", ->
+				timeoutId = 12345
+				@filler.timeouts[timeoutId] = "a mock timeout object"
+				timeouts = Object.keys @filler.timeouts
+				expect(timeouts.length).toBe 1
+
+				@filler.dequeueUpdate timeoutId, "not important"
+
+				timeouts = Object.keys @filler.timeouts
+				expect(timeouts.length).toBe 0
+
+				expect(@pool.acquire).toHaveBeenCalled()
