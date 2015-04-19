@@ -89,7 +89,7 @@ class DatabaseFiller
 		oldInterval = @updateInterval
 		@updateInterval = 1
 
-		@providerStationPairs.forEach @queueNextUpdate
+		@providerStationPairs.forEach @enqueueUpdate
 
 		@updateInterval = oldInterval
 
@@ -100,7 +100,7 @@ class DatabaseFiller
 
 	@param pair {ProviderStationPair} Pair to be updated
 	###
-	queueNextUpdate: (pair)->
+	enqueueUpdate: (pair)->
 		return if @stopping
 
 		timerId = @nextTimerId
@@ -125,7 +125,7 @@ class DatabaseFiller
 
 		@pool.acquire (error, childWorker)=>
 			if error
-				@queueNextUpdate pair
+				@enqueueUpdate pair
 			else
 				@makeChildWork childWorker, pair
 
@@ -160,7 +160,7 @@ class DatabaseFiller
 		else
 			logger.error "Failed handling #{pair}"
 
-		@queueNextUpdate pair
+		@enqueueUpdate pair
 
 
 	###
