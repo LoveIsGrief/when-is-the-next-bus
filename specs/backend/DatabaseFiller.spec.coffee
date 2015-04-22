@@ -126,7 +126,18 @@ describe "DatabaseFiller" , ->
 					expect(handleWorkerResponse).toBeDefined()
 					expect(handleWorkerResponse).toBeInstanceOf Function
 
-
+				it "should enqueue a pair from a valid message", ->
+					spyOn @filler, "enqueueUpdate"
+					pair = {
+						provider: "some provider"
+						stationCode: "a code"
+					}
+					validMessage = {
+						status: "OK"
+						pair: pair
+					}
+					@filler.handleWorkerResponse validMessage
+					expect(@filler.enqueueUpdate).toHaveBeenCalledWith pair
 
 	describe "handling updates", ->
 
