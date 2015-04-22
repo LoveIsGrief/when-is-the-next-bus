@@ -157,10 +157,12 @@ class DatabaseFiller
 		pair = message.pair
 		if message.status == "OK"
 			logger.info "Handled #{pair}"
-		else
+		else if pair
 			logger.error "Failed handling #{pair}"
+		else if not pair
+			logger.error "No pair in message: ", message
 
-		@enqueueUpdate pair
+		@enqueueUpdate pair if pair
 
 
 	###
