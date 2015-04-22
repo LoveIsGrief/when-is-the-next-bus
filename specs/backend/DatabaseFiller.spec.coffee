@@ -139,6 +139,19 @@ describe "DatabaseFiller" , ->
 					@filler.handleWorkerResponse validMessage
 					expect(@filler.enqueueUpdate).toHaveBeenCalledWith pair
 
+				it "should enqueue a pair from a valid message with bad a bad status", ->
+					spyOn @filler, "enqueueUpdate"
+					pair = {
+						provider: "some provider"
+						stationCode: "a code"
+					}
+					validMessage = {
+						status: "KO"
+						pair: pair
+					}
+					@filler.handleWorkerResponse validMessage
+					expect(@filler.enqueueUpdate).toHaveBeenCalledWith pair
+
 				it "should not enqueue a pair from an invalid message", ->
 					spyOn @filler, "enqueueUpdate"
 					invalidMessage = invalid: "lol"
