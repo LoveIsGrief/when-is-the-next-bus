@@ -153,7 +153,7 @@ class DatabaseFiller
 				stationCode: "String"
 		}
 	###
-	handleWorkerReponse: (message)=>
+	handleWorkerResponse: (message)=>
 		pair = message.pair
 		if message.status == "OK"
 			logger.info "Handled #{pair}"
@@ -174,7 +174,7 @@ class DatabaseFiller
 
 
 		# Register a handler for the responses from finished workers
-		@eventEmitter.on "message", @handleWorkerReponse
+		@eventEmitter.on "message", @handleWorkerResponse
 
 	###
 	Graceful shutdown. Waits till all requests are done
