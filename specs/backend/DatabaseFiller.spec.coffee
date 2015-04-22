@@ -116,6 +116,18 @@ describe "DatabaseFiller" , ->
 
 				@filler.killChildWorker child
 
+		describe "#handleWorkerResponse", ->
+
+				beforeEach ->
+					@filler = new DatabaseFiller
+
+				it "should be an existing function", ->
+					handleWorkerResponse = @filler.handleWorkerResponse
+					expect(handleWorkerResponse).toBeDefined()
+					expect(handleWorkerResponse).toBeInstanceOf Function
+
+
+
 	describe "handling updates", ->
 
 		it "should have #enqueueUpdate", ->
@@ -172,3 +184,4 @@ describe "DatabaseFiller" , ->
 				expect(timeouts.length).toBe 0
 
 				expect(@pool.acquire).toHaveBeenCalled()
+
