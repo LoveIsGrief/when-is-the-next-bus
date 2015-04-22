@@ -139,6 +139,14 @@ describe "DatabaseFiller" , ->
 					@filler.handleWorkerResponse validMessage
 					expect(@filler.enqueueUpdate).toHaveBeenCalledWith pair
 
+				it "should not enqueue a pair from an invalid message", ->
+					spyOn @filler, "enqueueUpdate"
+					invalidMessage = invalid: "lol"
+
+					@filler.handleWorkerResponse invalidMessage
+					expect(@filler.enqueueUpdate).not.toHaveBeenCalled()
+
+
 	describe "handling updates", ->
 
 		it "should have #enqueueUpdate", ->
