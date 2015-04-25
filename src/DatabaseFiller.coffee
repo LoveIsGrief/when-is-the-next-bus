@@ -100,7 +100,7 @@ class DatabaseFiller
 
 	@param pair {ProviderStationPair} Pair to be updated
 	###
-	enqueueUpdate: (pair)->
+	enqueueUpdate: (pair)=>
 		return if @stopping
 
 		timerId = @nextTimerId

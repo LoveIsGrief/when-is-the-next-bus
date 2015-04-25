@@ -116,7 +116,6 @@ describe "DatabaseFiller" , ->
 			# checks
 
 			timeoutIds = Object.keys @filler.timeouts
-			logger.info timeoutIds
 			expect(timeoutIds.length).toBe providerStationPairs.length
 
 			for timeoutId, timeout of @filler.timeouts
