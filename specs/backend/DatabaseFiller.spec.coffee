@@ -5,6 +5,7 @@ Q = require "q"
 DatabaseFiller = R("src/DatabaseFiller")
 EnvibusRemoteNextBusesGetter = R("tools/envibus/EnvibusRemoteNextBusesGetter")
 toBeInstanceOf = R("specs/matchers/toBeInstanceOf")
+objectShouldHaveMethod = R("specs/helpers/objectShouldHaveMethod")(expect)
 
 logger.setLevel "OFF"
 
@@ -28,10 +29,8 @@ describe "DatabaseFiller" , ->
 		beforeEach ->
 			@filler = new DatabaseFiller
 
-		it "should be an existing function", ->
-			initProviderStationPairs = @filler.initProviderStationPairs
-			expect(initProviderStationPairs).toBeDefined()
-			expect(initProviderStationPairs).toBeInstanceOf Function
+		it "should be an existing function"
+			, objectShouldHaveMethod("filler", "initProviderStationPairs")
 
 		describe "empty providerdata", ->
 
@@ -72,10 +71,8 @@ describe "DatabaseFiller" , ->
 		beforeEach ->
 			@filler = new DatabaseFiller
 
-		it "should be an existing function", ->
-			initPool = @filler.initPool
-			expect(initPool).toBeDefined()
-			expect(initPool).toBeInstanceOf Function
+		it "should be an existing function"
+			, objectShouldHaveMethod("filler", "initPool")
 
 		describe "first call", ->
 
@@ -90,10 +87,8 @@ describe "DatabaseFiller" , ->
 		beforeEach ->
 			@filler = new DatabaseFiller
 
-		it "should be an existing function", ->
-			initQueue = @filler.initQueue
-			expect(initQueue).toBeDefined()
-			expect(initQueue).toBeInstanceOf Function
+		it "should be an existing function"
+			, objectShouldHaveMethod("filler", "initQueue")
 
 		# timeout with 1ms timeout = ASAP
 		it "should enqueue an ASAP async update", ->
@@ -126,20 +121,14 @@ describe "DatabaseFiller" , ->
 		beforeEach ->
 			@filler = new DatabaseFiller
 
-		it "should have #createChildWorker", ->
-			createChildWorker = @filler.createChildWorker
-			expect(createChildWorker).toBeDefined()
-			expect(createChildWorker).toBeInstanceOf Function
+		it "should have #createChildWorker"
+			, objectShouldHaveMethod("filler", "createChildWorker")
 
-		it "should have #killChildWorker", ->
-			killChildWorker = @filler.killChildWorker
-			expect(killChildWorker).toBeDefined()
-			expect(killChildWorker).toBeInstanceOf Function
+		it "should have #killChildWorker"
+			, objectShouldHaveMethod("filler", "killChildWorker")
 
-		it "should have #isChildWorkerValid", ->
-			isChildWorkerValid = @filler.isChildWorkerValid
-			expect(isChildWorkerValid).toBeDefined()
-			expect(isChildWorkerValid).toBeInstanceOf Function
+		it "should have #isChildWorkerValid"
+			, objectShouldHaveMethod("filler", "isChildWorkerValid")
 
 		it "should be able to create and kill a child worker", (done)->
 
@@ -157,10 +146,8 @@ describe "DatabaseFiller" , ->
 				beforeEach ->
 					@filler = new DatabaseFiller
 
-				it "should be an existing function", ->
-					handleWorkerResponse = @filler.handleWorkerResponse
-					expect(handleWorkerResponse).toBeDefined()
-					expect(handleWorkerResponse).toBeInstanceOf Function
+				it "should be an existing function"
+					, objectShouldHaveMethod("filler", "handleWorkerResponse")
 
 				it "should enqueue a pair from a valid message", ->
 					spyOn @filler, "enqueueUpdate"
