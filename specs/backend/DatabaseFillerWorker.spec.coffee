@@ -16,20 +16,22 @@ sampleGetter =
 			when "envibus"
 				getter = new EnvibusRemoteNextBusesGetter
 				getNextBusesForStation: getter.get.bind getter
-			when "test"
-				getNextBusesForStation: ->
-					Q.fcall ->
 			else
 				getNextBusesForStation: (args...)->
 					Q.fcall ->
-						throw "provider #{providername} unknown"
+						[]
+						# throw "provider #{providername} unknown"
 
 
 describe "DatabaseFillerWorker" , ->
 
 	beforeEach ->
 		toBeInstanceOf(jasmine)
-		@worker = new DatabaseFillerWorker
+
+		@eventEmitter = on: ->
+		spyOn @eventEmitter, "on"
+
+		@worker = new DatabaseFillerWorker sampleGetter, @eventEmitter
 
 	describe "#writeToDb", ->
 
@@ -47,34 +49,20 @@ describe "DatabaseFillerWorker" , ->
 			, objectShouldHaveMethod("worker", "start")
 
 		it "should register the #onMessage handler", ->
-			# Setup to monitor call to eventEmitter#on
-			eventEmitter = on: ->
-			spyOn eventEmitter, "on"
-			@worker.eventEmitter = eventEmitter
-
 			@worker.start()
-			expect(eventEmitter.on).toHaveBeenCalledWith "message", @worker.onMessage
+			expect(@eventEmitter.on).toHaveBeenCalledWith "message", @worker.onMessage
 
 
-	xdescribe "#updateStationsNextBuses", ->
+	describe "#updateStationsNextBuses", ->
 
-		beforeEach ->
-			@worker = new DatabaseFillerWorker {
-				envibus: [
-					"999"
-				]
-			}, sampleGetter
-
-		it "should be a callable function"
+		it "should be an existing function"
 			, objectShouldHaveMethod("worker", "updateStationsNextBuses")
 
 		it "should return a promise", ->
-			expect(@worker.updateStationsNextBuses(@exampleProvider)).toBeInstanceOf Q.makePromise
+			expect(@worker.updateStationsNextBuses()).toBeInstanceOf Q.makePromise
 
-		it "should promise a list of buses", (done)->
-			@worker.updateStationsNextBuses(@envibusProvider, "999")
-			.then (buses)->
-				expect(buses).toBeDefined()
-				expect(buses).toBeInstanceOf Array
-				expect(buses.length).toBeGreaterThan 0
+		it "should promise a call to #writeToDb", (done)->
+			spyOn @worker, "writeToDb"
+			@worker.updateStationsNextBuses().then =>
+				expect(@worker.writeToDb).toHaveBeenCalled()
 				done()
