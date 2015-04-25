@@ -85,6 +85,13 @@ describe "DatabaseFiller" , ->
 				expect(pool).toBeDefined()
 				expect(pool.getName()).toEqual "DatabaseFillerWorkersPool"
 
+	describe "#initQueue", ->
+
+		it "should be an existing function", ->
+			initQueue = @filler.initQueue
+			expect(initQueue).toBeDefined()
+			expect(initQueue).toBeInstanceOf Function
+
 	describe "child worker handling", ->
 
 		beforeEach ->
@@ -158,7 +165,6 @@ describe "DatabaseFiller" , ->
 
 					@filler.handleWorkerResponse invalidMessage
 					expect(@filler.enqueueUpdate).not.toHaveBeenCalled()
-
 
 	describe "handling updates", ->
 
