@@ -46,6 +46,16 @@ describe "DatabaseFillerWorker" , ->
 		it "should be an existing function"
 			, objectShouldHaveMethod("worker", "start")
 
+		it "should register the #onMessage handler", ->
+			# Setup to monitor call to eventEmitter#on
+			eventEmitter = on: ->
+			spyOn eventEmitter, "on"
+			@worker.eventEmitter = eventEmitter
+
+			@worker.start()
+			expect(eventEmitter.on).toHaveBeenCalledWith "message", @worker.onMessage
+
+
 	xdescribe "#updateStationsNextBuses", ->
 
 		beforeEach ->
