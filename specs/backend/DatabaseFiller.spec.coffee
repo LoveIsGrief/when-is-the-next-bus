@@ -87,10 +87,40 @@ describe "DatabaseFiller" , ->
 
 	describe "#initQueue", ->
 
+		beforeEach ->
+			@filler = new DatabaseFiller
+
 		it "should be an existing function", ->
 			initQueue = @filler.initQueue
 			expect(initQueue).toBeDefined()
 			expect(initQueue).toBeInstanceOf Function
+
+		# timeout with 1ms timeout = ASAP
+		it "should enqueue an ASAP async update", ->
+			# setup
+			providerStationPairs = [
+				{
+					provider: "a provider"
+					stationCode: "a station code"
+				}
+				{
+					provider: "a provider"
+					stationCode: "another station code"
+				}
+			]
+			@filler.providerStationPairs = providerStationPairs
+			@filler.dequeueUpdate = ->
+
+			@filler.initQueue()
+
+			# checks
+
+			timeoutIds = Object.keys @filler.timeouts
+			logger.info timeoutIds
+			expect(timeoutIds.length).toBe providerStationPairs.length
+
+			for timeoutId, timeout of @filler.timeouts
+				expect(timeout._idleTimeout).toBe 1
 
 	describe "child worker handling", ->
 
