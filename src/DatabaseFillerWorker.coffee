@@ -1,5 +1,14 @@
 logger = require("log4js").getLogger()
 
+###
+An provider agnostic child worker for a pool
+that will get an update for a station's next buses and
+save it to the DB.
+
+It accepts a pair from the {DatabaseFiller}
+in an inter-process message in the {DatabaseFillerWorker#onMessage} method.
+
+###
 class DatabaseFillerWorker
 
 	constructor: (@getters, @eventEmitter=process)->
