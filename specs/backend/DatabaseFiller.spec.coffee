@@ -222,20 +222,62 @@ describe "DatabaseFiller" , ->
 				@filler = new DatabaseFiller
 				@filler.updateInterval = 1
 
-				@pool = acquire: ->
-				spyOn @pool, "acquire"
+				# To be put to work by the pool
+				@childWorker =
+					send: ->
+				spyOn @childWorker, "send"
+
+				# To be processed
+				@pair =
+					provider: "a provider"
+					stationCode: "a station code"
+
+				# Will put child to work and then "release" it
+				# A mock of generic-pool
+				@pool =
+					acquire: (fun)=>
+						fun( null , @childWorker)
+					release: (object)->
+				spyOn(@pool, "acquire").and.callThrough()
+				spyOn @pool, "release"
 				@filler.pool = @pool
 
+				# To track calls and hinder it from actually enqueuing
+				spyOn @filler, "enqueueUpdate"
+
+				# Mock a timeout
+				@timeoutId = 12345
+				@filler.timeouts[@timeoutId] = "a mock timeout object"
+
+
 			it "should remove a timeout from timeouts object", ->
-				timeoutId = 12345
-				@filler.timeouts[timeoutId] = "a mock timeout object"
-				timeouts = Object.keys @filler.timeouts
-				expect(timeouts.length).toBe 1
+				@filler.dequeueUpdate @timeoutId, @pair
+				timeoutIds = @filler.timeouts
+				expect(timeoutIds).not.toContain @timeoutId
 
-				@filler.dequeueUpdate timeoutId, "not important"
-
-				timeouts = Object.keys @filler.timeouts
-				expect(timeouts.length).toBe 0
-
+			it "should call pool acquire", ->
+				@filler.dequeueUpdate @timeoutId, @pair
 				expect(@pool.acquire).toHaveBeenCalled()
+
+			describe "and a childworker has been acquired from the pool" , ->
+
+				beforeEach ->
+					# Mock a timeout
+					@timeoutId = 12345
+					@filler.timeouts[@timeoutId] = "a mock timeout object"
+					timeoutIds = Object.keys @filler.timeouts
+					expect(timeoutIds.length).toBe 1
+
+				it "should put a childworker to work on the pair", ->
+					@filler.dequeueUpdate @timeoutId, @pair
+					expect(@childWorker.send).toHaveBeenCalledWith @pair
+
+				it "should enqueue an update to keep the process going", ->
+					@filler.dequeueUpdate @timeoutId, @pair
+					expect(@filler.enqueueUpdate).toHaveBeenCalledWith @pair
+
+
+				it "should release a child worker from the pool once done", ->
+					@filler.dequeueUpdate @timeoutId, @pair
+					expect(@pool.release).toHaveBeenCalledWith @childWorker
 
