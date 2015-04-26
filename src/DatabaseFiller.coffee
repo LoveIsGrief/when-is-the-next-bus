@@ -121,14 +121,17 @@ class DatabaseFiller
 	@param pair {ProviderStationPair}
 	###
 	dequeueUpdate: (timerId, pair)->
-		logger.info "Handling pair(#{timerId}): #{pair}"
+		logger.info "Handling pair(#{timerId}): ", pair
 		delete @timeouts[timerId]
 
 		@pool.acquire (error, childWorker)=>
-			if error
-				@enqueueUpdate pair
-			else
+			logger.debug "Child worker: ", childWorker
+			if not error
 				@makeChildWork childWorker, pair
+			@enqueueUpdate pair
+
+			# Important otherwise it will fill up and stop
+			@pool.release childWorker
 
 	###
 	Them little brats gotta work, eh?
