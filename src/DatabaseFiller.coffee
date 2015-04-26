@@ -49,6 +49,7 @@ class DatabaseFiller
 		@pool = createPool
 			name: "DatabaseFillerWorkersPool"
 			create: @createChildWorker
+			destroy: @killChildWorker
 			min: @getMinNumberOfChildren()
 			max: @getMaxNumberOfChildren()
 			idleTimeoutMillis: @updateInterval*2
