@@ -9,20 +9,6 @@ objectShouldHaveMethod = R("specs/helpers/objectShouldHaveMethod")(expect)
 
 logger.setLevel "INFO"
 
-sampleGetter =
-	inject: (providername)->
-
-		switch providername
-			when "envibus"
-				getter = new EnvibusRemoteNextBusesGetter
-				getNextBusesForStation: getter.get.bind getter
-			else
-				getNextBusesForStation: (args...)->
-					Q.fcall ->
-						[]
-						# throw "provider #{providername} unknown"
-
-
 describe "DatabaseFillerWorker" , ->
 
 	beforeEach ->
@@ -31,7 +17,7 @@ describe "DatabaseFillerWorker" , ->
 		@eventEmitter = on: ->
 		spyOn @eventEmitter, "on"
 
-		@worker = new DatabaseFillerWorker sampleGetter, @eventEmitter
+		@worker = new DatabaseFillerWorker @eventEmitter
 
 	describe "#writeToDb", ->
 
