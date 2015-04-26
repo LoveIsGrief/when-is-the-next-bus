@@ -1,4 +1,8 @@
 logger = require("log4js").getLogger()
+R = require("require-root")("project")
+
+RemoteNextBusesGetterInjector = R("src/backend/injector/RemoteNextBusesGetterInjector")
+
 
 ###
 An provider agnostic child worker for a pool
@@ -11,14 +15,14 @@ in an inter-process message in the {DatabaseFillerWorker#onMessage} method.
 ###
 class DatabaseFillerWorker
 
-	constructor: (@getters, @eventEmitter=process)->
-
+	constructor: (@eventEmitter=process)->
+		@getter = new RemoteNextBusesGetterInjector
 
 	writeToDb: (args...)->
 		logger.debug args
 
 	updateStationsNextBuses: (provider, stationCode)->
-		@getters.inject(provider).getNextBusesForStation(stationCode)
+		@getter.inject(provider).getNextBusesForStation(stationCode)
 		.then (buses)=>
 			@writeToDb provider, stationCode, buses
 
