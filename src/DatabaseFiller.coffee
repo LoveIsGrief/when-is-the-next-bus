@@ -40,6 +40,7 @@ class DatabaseFiller
 					provider: provider
 					stationCode: stationCode
 				}
+		logger.info "initialized providerStationPairs: #{@providerStationPairs.length}"
 
 	###
 	Creates a thread pool
@@ -112,6 +113,8 @@ class DatabaseFiller
 		@timeouts[timerId]=setTimeout dequeueFunc
 			, @updateInterval
 
+		logger.info "enqueued update of ", pair, " in #{@updateInterval}ms"
+
 	###
 	Removes the timerId from the queue
 	and processes the pair with a worker from the pool
@@ -140,6 +143,7 @@ class DatabaseFiller
 	@param pair {ProviderStationPair} data the childworker should treat
 	###
 	makeChildWork: (childWorker, pair)->
+		logger.debug "Make child work with: ", pair
 		childWorker.send pair
 
 	################################################
@@ -203,6 +207,7 @@ class DatabaseFiller
 
 # Start up a filler if the file is being run directly
 if require.main is module
+	logger.setLevel "INFO"
 	(new DatabaseFiller).start()
 
 
