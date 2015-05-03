@@ -1,21 +1,35 @@
 ###
 providerData =
 	providerName1:
-		stationDataForProvider1:
+		stationCode1({String}):
+			stationData1({StationData})
 	#.
 	#.
 	#.
 	providerNameN:
-		stationDataForProviderN:
+		stationCodeN({String}):
+			stationDataN({StationData})
 ###
 class ProviderData
 
 	constructor: ->
-		@internalObject = {}
+
+	###
+	@param providerName {String}
+	###
+	addProvider: (providerName)->
+		@[providerName] = @[providerName] || {}
 
 	###
 	@param providerName {String}
 	@param stationData {StationData}
 	###
-	addProvider: (providerName, stationData)->
-		@internalObject[providerName] = stationData
+	addStationData: (providerName, stationData)->
+		@addProvider providerName
+		@[providerName][stationData.code] = stationData
+
+	toString: ->
+		JSON.stringify @
+
+
+module.exports = ProviderData
